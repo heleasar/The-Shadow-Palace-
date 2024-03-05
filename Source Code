@@ -1,0 +1,146 @@
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+
+using namespace std;
+
+// Function to generate a random number between min and max (inclusive)
+int random(int min, int max) {
+    static bool initialized = false;
+    if (!initialized) {
+        srand(time(nullptr));
+        initialized = true;
+    }
+    return min + rand() % (max - min + 1);
+}
+
+// Player class
+class Player {
+private:
+    string name;
+    int health;
+    int attack;
+
+public:
+    Player(string playerName) : name(playerName), health(100), attack(10) {}
+
+    void displayStats() const {
+        cout << "Name: " << name << endl;
+        cout << "Health: " << health << endl;
+    }
+
+    bool isAlive() const {
+        return health > 0;
+    }
+
+    void takeDamage(int damage) {
+        health -= damage;
+        if (health < 0) {
+            health = 0;
+        }
+        cout << "You took " << damage << " damage. Remaining health: " << health << endl;
+    }
+
+    int attackEnemy() const {
+        return attack + random(-5, 5);
+    }
+};
+
+// Enemy class
+class Enemy {
+private:
+    string type;
+    int health;
+    int attack;
+
+public:
+    Enemy(string enemyType) : type(enemyType) {
+        if (enemyType == "Shadow Queen") {
+            health = 30;
+            attack = 5;
+        } else if (enemyType == "Doopliss") {
+            health = 50;
+            attack = 10;
+        } else {
+            health = 20;
+            attack = 3;
+        }
+    }
+
+    bool isAlive() const {
+        return health > 0;
+    }
+
+    void takeDamage(int damage) {
+        health -= damage;
+        if (health < 0) {
+            health = 0;
+        }
+        cout << "The " << type << " took " << damage << " damage. Remaining health: " << health << endl;
+    }
+
+    int attackPlayer() const {
+        return attack + random(-3, 3);
+    }
+};
+
+int main() {
+    cout << "Welcome to the Palace of Shadow!" << endl;
+    cout << "What's your name? ";
+    string playerName;
+    cin >> playerName;
+
+    Player player(playerName);
+    player.displayStats();
+
+    while (player.isAlive()) {
+        cout << endl;
+        cout << "You encounter an enemy!" << endl;
+        string enemyType;
+        int choice;
+        cout << "Choose your enemy (1. Shadow Queen, 2. Doopliss, 3. Skeleton): ";
+        cin >> choice;
+        switch (choice) {
+            case 1:
+                enemyType = "Shadow Queen";
+                break;
+            case 2:
+                enemyType = "Doopliss";
+                break;
+            case 3:
+                enemyType = "Skeleton";
+                break;
+            default:
+                cout << "Invalid choice! Defaulting to Shadow Queen." << endl; // Shadow Queen is the Main Boss
+                enemyType = "Shadow Queen";
+                break;
+        }
+
+        Enemy enemy(enemyType);
+
+        while (enemy.isAlive() && player.isAlive()) {
+            int playerDamage = player.attackEnemy();
+            int enemyDamage = enemy.attackPlayer();
+
+            cout << "You attack the " << enemyType << " for " << playerDamage << " damage." << endl;
+            enemy.takeDamage(playerDamage);
+
+            if (enemy.isAlive()) {
+                cout << "The " << enemyType << " attacks you for " << enemyDamage << " damage." << endl;
+                player.takeDamage(enemyDamage);
+            }
+        }
+
+        if (!player.isAlive()) {
+            cout << "Game over! You were defeated by the " << enemyType << "." << endl;
+            break;
+        } else {
+            cout << "You defeated the " << enemyType << "! Moving to the next room..." << endl;
+        }
+    }
+
+    cout << "Thanks for playing!" << endl;
+
+    return 0;
+}
